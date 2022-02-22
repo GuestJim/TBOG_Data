@@ -27,7 +27,38 @@
 		output$graphPART	=	renderPlot({	GRAPH$PLOTs[as.numeric(input$plotsSel)]	})
 		#	as.numeric is necessary because the input$plotsSel is not a number
 	},	priority	=	-1)
+
+	brushZOOM	=	reactiveValues(x = c(-Inf, Inf),	y = c(-Inf, Inf))
+	observe({
+		brush <- input$COURSEbrush
+			if (!is.null(brush)) {
+			  brushZOOM$x <- c(brush$xmin, brush$xmax)
+			} else {
+			  brushZOOM$x <- NULL
+			}
+		})
+	output$graphCOURSEtext	=	renderText("Click and Drag to Zoom Below")
 	
+	graphCOURSE	=	function(DATA, PART)	{
+		ggplot(DATA[DATA$Part == PART, ], aes(x = get("Time in Video"), y = PULSE, color=PULSE)) +
+		ggtitle(PART, subtitle = "Heart Rate over Time in Video") +
+		scale_color_gradient("Pulse", low = "#6d59ff", high = "#ab4b41", labels = NULL) + 
+		geom_step() + 
+		scale_x_time(name = "Time in Video", expand = c(0.02, 0)) +
+		scale_y_continuous(name = "Heart Rate (bpm)", expand = c(0.02, 0)) +
+		theme(legend.position = "none", plot.title.position = "plot")
+	}
+	
+	observeEvent(list(input$dataInput, input$dataSelLOAD),	{
+		req(DATA$HRclean)
+		output$graphCOURSE	=	renderPlot({
+			graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)])
+		})
+		output$graphCOURSEzoom	=	renderPlot({
+			graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)]) +
+			coord_cartesian(xlim = brushZOOM$x,	expand = FALSE)
+		})
+	})
 
 	output$downloadGraphPart	=	downloadHandler(
 		filename	=	function()	{paste(DATA$levs[as.numeric(input$plotsSel)], "Hist.png", sep=" - ")},
@@ -42,7 +73,7 @@
 
 		output$graphFACET	=	renderPlot({	GRAPH$FACET	})
 	},	priority	=	-1)
-	
+
 	output$downloadGraph	=	downloadHandler(
 		filename	=	function()	{paste0(DATA$game, " - Hist.png")},
 		content	=	function(file)	{ggsave(file, plot = GRAPH$FACET, device = "png", width = input$gWIDTH, height = input$gHEIGH)}

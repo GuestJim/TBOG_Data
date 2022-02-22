@@ -5,6 +5,7 @@ library(ggplot2)
 
 DATA	=	new.env()
 DATA$LOAD	=	FALSE	#used for tracking if data has been loaded automatically
+DATA$Default	=	"Dead Rising 4.csv.bz2"
 GRAPH	=	new.env()
 #	rather than using super-assignment and pushing variables to Global, I'm putting them into this environment
 #	this keeps DATA within the Shiny environment too, so when Shiny ends, the data is apparently removed, which I'm good with

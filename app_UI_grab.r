@@ -4,7 +4,7 @@ ui <- fluidPage(
 	sidebarLayout(
 		sidebarPanel(
 			selectInput(inputId	=	"dataSel",	label	=	"Data to Load",	selectize	=	FALSE,
-				choices	=	setNames(FILES,	gsub(".csv.bz2", "", FILES))
+				choices	=	setNames(FILES,	gsub(".csv.bz2", "", FILES)),	selected	=	DATA$Default
 			),
 			actionButton(inputId	=	"dataSelLOAD",	label	=	"Load Selected Data"),
 			fileInput(inputId	=	"dataInput",
@@ -34,7 +34,7 @@ ui <- fluidPage(
 				tabPanel("Single Graph",
 					fixedRow(
 						column(3,
-								downloadButton(outputId	=	"downloadGraphPart",	label	=	"Single Graph (PNG)")
+								downloadButton(outputId	=	"downloadGraphPart",	label	=	"Histogram (PNG)")
 							),
 						column(3,
 							numericInput(inputId	=	"gWIDTH",
@@ -62,6 +62,10 @@ ui <- fluidPage(
 							),
 						),
 						plotOutput("graphPART",	height	=	480),
+						plotOutput("graphCOURSE",	height	=	480,
+							brush	=	brushOpts(id	=	"COURSEbrush", resetOnNew	=	TRUE, direction	=	"x")),
+						textOutput("graphCOURSEtext"), 
+						plotOutput("graphCOURSEzoom",	height	=	480),
 					),
 				tabPanel("Faceted Graph", 
 					fixedRow(
@@ -83,7 +87,6 @@ ui <- fluidPage(
 							)
 						),
 					),
-					textOutput("graphText"),
 					plotOutput("graphFACET", height	=	480),
 				),
 				id	=	"graphs",
