@@ -7,27 +7,19 @@ on:
 name: shiny-deploy
 
 jobs:
-  shiny-deploy:
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+  deploy-shiny:
+    runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v2
-
-      - uses: r-lib/actions/setup-pandoc@v1
-
-      - uses: r-lib/actions/setup-r@v1
-        with:
-          use-public-rspm: true
-
-      - uses: r-lib/actions/setup-renv@v1
-
-      - name: Install rsconnect
-        run: install.packages(c("libcurl", "rsconnect"))
-        shell: Rscript {0}
-
-      - name: Authorize and deploy app
+      - uses: r-lib/actions/setup-r@master
+      - name: Install shiny
         run: |
-          rsconnect::setAccountInfo(${{ secrets.ShinyApps_ACC_NAME }}, ${{ secrets.ShinyApps_TOKEN }}, ${{ secrets.ShinyApps_SECRET }})
-          rsconnect::deployApp(appName=${{ secrets.ShinyApps_NAME }})
+          install.packages(c("shiny", "rsconnect"), type = "binary")
+        shell: Rscript {0}
+      - name: shinyapps credentials
+        with:
+          rsconnect_secret: ${{ secrets.RSCONNECT }}
+        run: |
+          Rscript -e "rsconnect::setAccountInfo(name='${{ secrets.ShinyApps_ACC_NAME }}', token=${{secrets.ShinyApps_TOKEN}}, secret=${{secrets.ShinyApps_SECRET}})"
+          Rscript -e "rsconnect::deployApp(appName = '${{ secrets.ShinyApps_NAME }}')"
         shell: Rscript {0}
