@@ -29,15 +29,44 @@
 	},	priority	=	-1)
 
 	brushZOOM	=	reactiveValues(x = c(-Inf, Inf),	y = c(-Inf, Inf))
-	observe({
+	observeEvent(list(input$COURSEbrush),	{
 		brush <- input$COURSEbrush
 			if (!is.null(brush)) {
-			  brushZOOM$x <- c(brush$xmin, brush$xmax)
+				brushZOOM$x <- c(brush$xmin, brush$xmax)
 			} else {
-			  brushZOOM$x <- NULL
+				brushZOOM$x <- NULL
 			}
-		})
-	output$graphCOURSEtext	=	renderText("Click and Drag to Zoom Below")
+			
+		output$brushCOURSEtable	=	renderTable({
+			req(input$COURSEbrush)
+			brushTABLE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)], brushZOOM)
+		},	digits	=	2,	rownames	=	TRUE,	striped	=	TRUE)
+	})
+	
+	output$brushCOURSEtext	=	renderText("")	
+	observeEvent(list(input$dataInput, input$dataSelLOAD),	{
+		output$brushCOURSEtext	=	renderText("Click and Drag to Zoom Below")	
+	},	ignoreInit	=	TRUE,	once	=	TRUE)
+	
+	brushTABLE	=	function(IN = DATA$HRclean, PART = DATA$levs[as.numeric(input$plotsSel)], BRUSH = brushZOOM)	{
+		if (is.null(BRUSH$x))	return(NULL)
+		IN$Secs	=	as.numeric(IN$"Time in Video")
+		hold		=	IN[
+			IN$Part == PART			&
+			IN$Secs >= BRUSH$x[1]	&
+			IN$Secs <= BRUSH$x[2]
+			, ]
+		
+		out	=	setNames(rbind(	"Min"	=	hold[which.min(hold$PULSE), c("Time in Video", "PULSE")],
+								"Max"	=	hold[which.max(hold$PULSE), c("Time in Video", "PULSE")]	),
+						c("Time in Video", "Pulse")	)
+		out$"Time in Video"	=	sapply(as.numeric(out$"Time in Video"), timeSum)
+		out	=	rbind(out,	Mean	=	c("",	round(mean(hold$PULSE),		2)	),
+							Median	=	c("",	round(median(hold$PULSE),	2)	)	)
+		rownames(out)	=	c("Min", "Max", "Mean", "Median")
+		return(out)
+	}
+	
 	
 	graphCOURSE	=	function(DATA, PART)	{
 		ggplot(DATA[DATA$Part == PART, ], aes(x = get("Time in Video"), y = PULSE, color=PULSE)) +
@@ -54,7 +83,7 @@
 		output$graphCOURSE	=	renderPlot({
 			graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)])
 		})
-		output$graphCOURSEzoom	=	renderPlot({
+		output$brushCOURSEzoom	=	renderPlot({
 			graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)]) +
 			coord_cartesian(xlim = brushZOOM$x,	expand = FALSE)
 		})

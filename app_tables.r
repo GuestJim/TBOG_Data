@@ -13,7 +13,7 @@
 
 	observeEvent(list(input$dataInput, input$dataSelLOAD, DATA$LOAD, input$tabCOLS, input$tabROWS), {
 		req(DATA$STATS)
-		output$summaryTable	=	renderTable({	DATA$STATS[filtROW(), filtCOL()]	},	digits = 2)
+		output$summaryTable	=	renderTable({	DATA$STATS[filtROW(), filtCOL()]	},	digits = 2, striped = TRUE)
 		
 		output$timePartsSel	=	renderText({	paste0("Time in selected parts: ", partTIME())	})
 	})

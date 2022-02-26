@@ -64,8 +64,9 @@ ui <- fluidPage(
 						plotOutput("graphPART",	height	=	480),
 						plotOutput("graphCOURSE",	height	=	480,
 							brush	=	brushOpts(id	=	"COURSEbrush", resetOnNew	=	TRUE, direction	=	"x")),
-						textOutput("graphCOURSEtext"), 
-						plotOutput("graphCOURSEzoom",	height	=	480),
+						textOutput("brushCOURSEtext"),
+						plotOutput("brushCOURSEzoom",	height	=	480),
+						tableOutput("brushCOURSEtable"),
 					),
 				tabPanel("Faceted Graph", 
 					fixedRow(
