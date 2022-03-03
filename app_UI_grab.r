@@ -1,4 +1,3 @@
-FILES	=	list.files(path = "Data", pattern = "*.csv*")
 ui <- fluidPage(
 	uiOutput('Title'),
 	sidebarLayout(
