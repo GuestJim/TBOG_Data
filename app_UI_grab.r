@@ -3,7 +3,7 @@ ui <- fluidPage(
 	sidebarLayout(
 		sidebarPanel(
 			selectInput(inputId	=	"dataSel",	label	=	"Data to Load",	selectize	=	FALSE,
-				choices	=	setNames(FILES,	gsub(".csv.bz2", "", FILES)),	selected	=	DATA$Default
+				choices	=	setNames(FILES,	gsub("_", ":", gsub(".csv.bz2", "", FILES))),	selected	=	DATA$Default
 			),
 			actionButton(inputId	=	"dataSelLOAD",	label	=	"Load Selected Data"),
 			fileInput(inputId	=	"dataInput",
