@@ -7,16 +7,13 @@ library(ggplot2)
 DATA	=	new.env()
 FILES	=	list.files(path = "Data", pattern = "*.csv*")
 DATA$LOAD		=	FALSE	#used for tracking if data has been loaded automatically
-DATA$Default	=	FILES[which.max(file.mtime(paste0("Data/", FILES)))]
+# DATA$Default	=	FILES[which.max(file.mtime(paste0("Data/", FILES)))]
 #	with file.mtime, the modified timestamp is found and which.max will find the newest file in the list. In theory then, just updating the Data folder is enough, even though that's not an option with ShinyApps.io
 #		above not useful on ShinyApps.io because the modified times are when they all were uploaded
-DATA$Default	=	"Amnesia_ Rebirth.csv.bz2"
+# DATA$Default	=	"Amnesia_ Rebirth.csv.bz2"
 GRAPH	=	new.env()
 #	rather than using super-assignment and pushing variables to Global, I'm putting them into this environment
 #	this keeps DATA within the Shiny environment too, so when Shiny ends, the data is apparently removed, which I'm good with
-
-# DATA$FILE	=	"Dead Rising 4.csv.bz2"
-#	by giving this a file, we can avoid needing to upload a file
 
 dataLOAD	=	function(name, datapath	=	NULL)	{
 	if (is.null(datapath))	datapath	=	name
@@ -35,6 +32,7 @@ source("app_UI_grab.r", local	=	TRUE)
 
 # Define server logic to summarize and view selected dataset ----
 server <- function(input, output, session) {
+	setBookmarkExclude(c("dataSelLOAD", "dataInput", "graphs", "tabCOLS", "tabROWS", "gWIDTH", "gHEIGH", "plotsSel"))
 	output$Title	=	renderUI({	titlePanel("Heart Rate Statistics and Graphs")	})
 	if (exists("FILE", envir	=	DATA))	{
 		dataLOAD(DATA$FILE)
@@ -85,4 +83,4 @@ server <- function(input, output, session) {
 }
 
 # Create Shiny app ----
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server, enableBookmarking = "url")

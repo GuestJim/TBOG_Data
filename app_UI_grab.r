@@ -1,4 +1,4 @@
-ui <- fluidPage(
+ui <- function(request)	{fluidPage(
 	uiOutput('Title'),
 	sidebarLayout(
 		sidebarPanel(
@@ -11,6 +11,7 @@ ui <- fluidPage(
 				accept	=	c(".csv", ".csv.bz2", ".csv.gz", ".csv.xz"),
 				placeholder	=	"No File Selected"
 			),
+			# bookmarkButton(),
 			checkboxGroupInput(inputId	=	"tabCOLS",	label	=	"Statistics to show:",
 				choices		=	names(stats(Inf)),
 				selected	=	c("Mean", "Median"),	#	the default selected values
@@ -96,3 +97,4 @@ ui <- fluidPage(
 		),
 	)
 )
+}
