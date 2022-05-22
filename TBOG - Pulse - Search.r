@@ -99,8 +99,8 @@ for (IND in 1:length(CSVs))	{
 	write.table(tempTABL, file=paste0(PART, "/", PART, " Frequency.txt"), sep = ",", row.names = FALSE)
 	
 #	Graph
-	temp6570	=	sum(tempTABL[temp$Rate >= 65 & tempTABL$Rate < 70, "Count"])
-	temp6065	=	sum(tempTABL[temp$Rate >= 65 & tempTABL$Rate < 70, "Count"])
+	temp6570	=	sum(tempTABL[tempTABL$Rate >= 65 & tempTABL$Rate < 70, "Count"])
+	temp6065	=	sum(tempTABL[tempTABL$Rate >= 65 & tempTABL$Rate < 70, "Count"])
 	
 	PULSEseq	=	70:max(temp$PULSE, 100)
 	if	(temp6570 > 10)	PULSEseq	=	65:max(temp$PULSE, 100)
