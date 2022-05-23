@@ -54,11 +54,11 @@ server <- function(input, output, session) {
 
 		output$Title	=	renderUI({	titlePanel(paste0(DATA$game, " - Heart Rate Statistics and Graphs"))	})
 		updateCheckboxGroupInput(inputId	=	"tabROWS",
-			choices		=	DATA$levs,	selected	=	DATA$levs
+			choiceValues	=	DATA$levs,	choiceNames	=	lapply(DATA$levs, prettyNUM),	selected	=	DATA$levs
 		)
 
 		updateSelectInput(inputId	=	"plotsSel",
-			choices	=	setNames(1:length(DATA$levs), DATA$levs)	#will assign the second argument to the first as names
+			choices	=	setNames(1:length(DATA$levs), sapply(DATA$levs, prettyNUM))	#will assign the second argument to the first as names
 		)
 	})
 

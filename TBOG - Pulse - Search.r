@@ -16,9 +16,12 @@ game	=	rev(simpsplit(getwd(), "/"))[1]
 
 prettyNUM	=	function(IN){
 	out	=	simpsplit(IN, " ")
+	if (length(out) == 1)	return(out)
+	NUM	=	try(as.numeric(out[length(out)]), silent = TRUE)
+	if (is.na(NUM))	NUM	=	out[length(out)]
 	paste0(c(
 		out[1:(length(out)-1)],
-		as.numeric(out[length(out)])),
+		NUM),
 		collapse = " "
 	)
 }

@@ -24,3 +24,16 @@ roundFRAME	=	function(IN, r = 2)	{
 	IN[numCOL]	=	round(IN[, numCOL], r)
 	return(IN)
 }
+
+simpsplit	=	function(...)	unlist(strsplit(...))
+prettyNUM	=	function(IN){
+	out	=	simpsplit(IN, " ")
+	if (length(out) == 1)	return(out)
+	NUM	=	try(as.numeric(out[length(out)]), silent = TRUE)
+	if (is.na(NUM))	NUM	=	out[length(out)]
+	paste0(c(
+		out[1:(length(out)-1)],
+		NUM),
+		collapse = " "
+	)
+}

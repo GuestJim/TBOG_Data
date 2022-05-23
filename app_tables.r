@@ -13,7 +13,11 @@
 
 	observeEvent(list(input$dataInput, input$dataSelLOAD, DATA$LOAD, input$tabCOLS, input$tabROWS), {
 		req(DATA$STATS)
-		output$summaryTable	=	renderTable({	DATA$STATS[filtROW(), filtCOL()]	},	digits = 2, striped = TRUE)
+		output$summaryTable	=	renderTable({
+			out	<-	DATA$STATS[filtROW(), filtCOL()]
+			levels(out$Part)	=	sapply(levels(out$Part), prettyNUM)
+			out
+		},	digits = 2, striped = TRUE)
 		
 		output$timePartsSel	=	renderText({	paste0("Time in selected parts: ", partTIME())	})
 	})
