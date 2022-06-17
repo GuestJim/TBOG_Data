@@ -12,6 +12,7 @@ ui <- function(request)	{fluidPage(
 				placeholder	=	"No File Selected"
 			),
 			# bookmarkButton(),
+			downloadButton("report",	"Generate Report"),
 			checkboxGroupInput(inputId	=	"tabCOLS",	label	=	"Statistics to show:",
 				choices		=	names(stats(Inf)),
 				selected	=	c("Mean", "Median"),	#	the default selected values

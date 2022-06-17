@@ -18,7 +18,9 @@ GRAPH	=	new.env()
 dataLOAD	=	function(name, datapath	=	NULL)	{
 	if (is.null(datapath))	datapath	=	name
 	HRdata	=	read_csv(datapath, guess_max = 10, lazy = TRUE, show_col_types = FALSE)
-	DATA$game	=	unlist(strsplit(HRdata[1, ]$Part, " - "))[1]
+	# DATA$game	=	unlist(strsplit(HRdata[1, ]$Part, " - "))[1]
+	# DATA$game	=	gsub(" - Part [0-9]*", "", HRdata[1, ]$Part)
+	DATA$game	=	gsub("_", ":", gsub(".csv.bz2", "", name))
 
 	HRdata$Part		=	ordered(HRdata$Part, unique(HRdata$Part))
 	DATA$levs		<-	levels(HRdata$Part)
@@ -80,6 +82,11 @@ server <- function(input, output, session) {
 
 	source("app_tables.r",	local = TRUE)
 	source("app_graphs.r",	local = TRUE)
+	
+	output$report	<-	downloadHandler(
+		filename	=	function()	{paste0("TBOG - ", DATA$game, ".PDF")}, 
+		content	=	function(file)	{	rmarkdown::render("Report_Static.rmd", output_file = file)	}
+	)
 }
 
 # Create Shiny app ----
