@@ -2,8 +2,8 @@
 title: The Body on Games Heart Rate and Statistics Report
 subtitle: "`r DATA$game`"
 output: 
-  pdf_document:
-    latex_engine: xelatex
+ pdf_document:
+  latex_engine: xelatex
 geometry: margin=0.5in
 ---
 ```{r include=FALSE}
