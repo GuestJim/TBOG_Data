@@ -56,11 +56,11 @@ ui <- function(request)	{fluidPage(
 						plotOutput("graphPART",		height	=	480),
 						plotOutput("graphCOURSE",	height	=	480,
 							brush	=	brushOpts(id	=	"COURSEbrush", resetOnNew	=	TRUE, direction	=	"x")),
-						textOutput("brushCOURSEtext"),
+						strong("Click and Drag to Zoom Below"),
 						plotOutput("brushCOURSEzoom",	height	=	480),
 						tableOutput("brushCOURSEtable"),
 					),
-				tabPanel("Faceted Graph", 
+				tabPanel("Faceted Graph",
 					fixedRow(
 						column(3,	downloadButton(outputId	=	"downloadGraph",	label	=	"Faceted Graph (PNG)")	),
 						column(3,	numericInput(inputId	=	"facetWIDTH",

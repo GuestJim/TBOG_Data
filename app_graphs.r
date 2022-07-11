@@ -17,6 +17,20 @@ facetHIST	=	function(DATA = DATA$HRclean)	{
 	theme(legend.position = "none", plot.title.position = "plot")
 }
 
+observeEvent(input$tabROWS,	{	req(DATA$HRclean)
+	GRAPH$FACET	=	facetHIST(DATA$HRclean[DATA$HRclean$Part %in% input$tabROWS, ]) +
+						facet_wrap(vars(Part), scales = "free_y", labeller = labeller(Part = function(IN)	sapply(gsub(paste0(DATA$game, " - "), "", IN), prettyNUM))) +
+						ggtitle(DATA$game, subtitle = paste0("Total Time: ", partTIME() ))
+
+	output$graphFACET	=	renderPlot({	GRAPH$FACET	})
+},	priority	=	-1)
+
+output$downloadGraph	=	downloadHandler(
+	filename	=	function()	{paste(DATA$game, "Hist.png", sep = " - ")},
+	content	=	function(file)	{ggsave(file, plot = GRAPH$FACET, device = "png",
+		width = input$facetWIDTH,	height = input$facetHEIGHT)}
+)
+
 observeEvent(list(input$dataInput, input$dataSelLOAD, DATA$LOAD),	{
 	req(DATA$HRclean)
 	GRAPH$PLOTs	=	lapply(1:length(DATA$levs), function(PART)	{
@@ -29,25 +43,28 @@ observeEvent(list(input$dataInput, input$dataSelLOAD, DATA$LOAD),	{
 	#	as.numeric is necessary because the input$plotsSel is not a number
 },	priority	=	-1)
 
-brushZOOM	=	reactiveValues(x = c(-Inf, Inf),	y = c(-Inf, Inf))
-observeEvent(list(input$COURSEbrush),	{
-	brush <- input$COURSEbrush
-		if (!is.null(brush)) {
-			brushZOOM$x <- c(brush$xmin, brush$xmax)
-		} else {
-			brushZOOM$x <- NULL
-		}
-		
-	output$brushCOURSEtable	=	renderTable({
-		req(input$COURSEbrush)
-		brushTABLE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)], brushZOOM)
-	},	digits	=	2,	rownames	=	TRUE,	striped	=	TRUE)
+observeEvent(list(input$dataInput, input$dataSelLOAD),	{
+	req(DATA$HRclean)
+	output$graphCOURSE	=	renderPlot({
+		graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)])
 })
 
-output$brushCOURSEtext	=	renderText("")	
-observeEvent(list(input$dataInput, input$dataSelLOAD),	{
-	output$brushCOURSEtext	=	renderText("Click and Drag to Zoom Below")	
-},	ignoreInit	=	TRUE,	once	=	TRUE)
+output$downloadGraphPart	=	downloadHandler(
+	filename	=	function()	{paste(DATA$levs[as.numeric(input$plotsSel)], "Hist.png", sep = " - ")},
+	content	=	function(file)	{ggsave(file, plot = GRAPH$PLOTs[[as.numeric(input$plotsSel)]],	device = "png",
+		width = input$partWIDTH,	height = input$partHEIGHT)}
+)
+
+
+graphCOURSE	=	function(DATA, PART)	{
+	ggplot(DATA[DATA$Part == PART, ], aes(x = get("Time in Video"), y = PULSE, color=PULSE)) +
+	ggtitle(prettyNUM(PART), subtitle = "Heart Rate over Time in Video") +
+	scale_color_gradient("Pulse", low = "#6d59ff", high = "#ab4b41", labels = NULL) + 
+	geom_step() + 
+	scale_x_time(name = "Time in Video", expand = c(0.02, 0)) +
+	scale_y_continuous(name = "Heart Rate (bpm)", expand = c(0.02, 0)) +
+	theme(legend.position = "none", plot.title.position = "plot")
+}
 
 brushTABLE	=	function(IN = DATA$HRclean, PART = DATA$levs[as.numeric(input$plotsSel)], BRUSH = brushZOOM)	{
 	if (is.null(BRUSH$x))	return(NULL)
@@ -68,45 +85,22 @@ brushTABLE	=	function(IN = DATA$HRclean, PART = DATA$levs[as.numeric(input$plots
 	return(out)
 }
 
-
-graphCOURSE	=	function(DATA, PART)	{
-	ggplot(DATA[DATA$Part == PART, ], aes(x = get("Time in Video"), y = PULSE, color=PULSE)) +
-	ggtitle(prettyNUM(PART), subtitle = "Heart Rate over Time in Video") +
-	scale_color_gradient("Pulse", low = "#6d59ff", high = "#ab4b41", labels = NULL) + 
-	geom_step() + 
-	scale_x_time(name = "Time in Video", expand = c(0.02, 0)) +
-	scale_y_continuous(name = "Heart Rate (bpm)", expand = c(0.02, 0)) +
-	theme(legend.position = "none", plot.title.position = "plot")
-}
-
-observeEvent(list(input$dataInput, input$dataSelLOAD),	{
-	req(DATA$HRclean)
-	output$graphCOURSE	=	renderPlot({
-		graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)])
+brushZOOM	=	reactiveValues(x = c(-Inf, Inf),	y = c(-Inf, Inf))
+observeEvent(list(input$COURSEbrush),	{	req(DATA$HRclean)
+	brush <- input$COURSEbrush
+	if (!is.null(brush)) {
+		brushZOOM$x <- c(brush$xmin, brush$xmax)
+	} else {
+		brushZOOM$x <- NULL
+	}
+		
+	output$brushCOURSEtable	=	renderTable({
+		brushTABLE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)], brushZOOM)
+	},	digits	=	2,	rownames	=	TRUE,	striped	=	TRUE)
 	})
+	
 	output$brushCOURSEzoom	=	renderPlot({
 		graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)]) +
 		coord_cartesian(xlim = brushZOOM$x,	expand = FALSE)
 	})
 })
-
-output$downloadGraphPart	=	downloadHandler(
-	filename	=	function()	{paste(DATA$levs[as.numeric(input$plotsSel)], "Hist.png", sep = " - ")},
-	content	=	function(file)	{ggsave(file, plot = GRAPH$PLOTs[[as.numeric(input$plotsSel)]],	device = "png",
-		width = input$partWIDTH,	height = input$partHEIGHT)}
-)
-
-observeEvent(input$tabROWS,	{
-	req(DATA$HRclean)
-	GRAPH$FACET	=	facetHIST(DATA$HRclean[DATA$HRclean$Part %in% input$tabROWS, ]) +
-						facet_wrap(vars(Part), scales = "free_y", labeller = labeller(Part = function(IN)	sapply(gsub(paste0(DATA$game, " - "), "", IN), prettyNUM))) +
-						ggtitle(DATA$game, subtitle = paste0("Total Time: ", partTIME() ))
-
-	output$graphFACET	=	renderPlot({	GRAPH$FACET	})
-},	priority	=	-1)
-
-output$downloadGraph	=	downloadHandler(
-	filename	=	function()	{paste(DATA$game, "Hist.png", sep = " - ")},
-	content	=	function(file)	{ggsave(file, plot = GRAPH$FACET, device = "png",
-		width = input$facetWIDTH,	height = input$facetHEIGHT)}
-)

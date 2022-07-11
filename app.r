@@ -49,7 +49,7 @@ server <- function(input, output, session) {
 		dataLOAD(FILE$name, FILE$datapath)
 		DATA$LOAD	=	TRUE
 	},	priority	=	10)
-	
+
 	observeEvent(input$dataSelLOAD,	{
 		dataLOAD(input$dataSel, paste0("Data/", input$dataSel))
 		DATA$LOAD	=	TRUE
@@ -73,22 +73,6 @@ server <- function(input, output, session) {
 		updateSelectInput(inputId	=	"plotsSel",
 			choices	=	setNames(1:length(DATA$levs), sapply(DATA$levs, prettyNUM))	#will assign the second argument to the first as names
 		)
-	})
-
-	filtCOL	=	reactiveVal(c("Part", "Mean", "Median"))
-	filtROW	=	reactiveVal(TRUE)
-	observeEvent(input$tabCOLS,	{
-		req(DATA$STATS)
-		filtCOL(names(DATA$STATS)	%in%	c("Part", input$tabCOLS))
-	})
-	observeEvent(input$tabROWS,	{
-		req(DATA$STATS)
-		filtROW(DATA$STATS$Part		%in%	c(input$tabROWS))
-	})
-
-	partTIME	=	reactiveVal(timeSum(DATA$HRtime$Time))
-	observeEvent(filtROW(),	{
-		partTIME(timeSum(DATA$STATS[filtROW(), "Time.in.Video"]))
 	})
 
 	source("app_tables.r",	local = TRUE)
