@@ -14,6 +14,10 @@ DATA$LOAD		=	FALSE	#used for tracking if data has been loaded automatically
 GRAPH	=	new.env()
 #	rather than using super-assignment and pushing variables to Global, I'm putting them into this environment
 #	this keeps DATA within the Shiny environment too, so when Shiny ends, the data is apparently removed, which I'm good with
+VIEW	=	new.env()
+
+VIEW$YTlink	=	"_p9Ifq4ln-c"
+VIEW$YTlist	=	"https://www.youtube.com/channel/UCtzfp-ZWZWLhGTjhP5NeYqQ/playlists"
 
 dataLOAD	=	function(name, datapath	=	NULL)	{
 	if (is.null(datapath))	datapath	=	name
@@ -48,6 +52,13 @@ server <- function(input, output, session) {
 		dataLOAD(input$dataSel, paste0("Data/", input$dataSel))
 		DATA$LOAD	=	TRUE
 	},	priority	=	10)
+
+	observeEvent(input$tutorial,	{
+		showModal(	modalDialog(
+			HTML(paste0('<iframe width="560" height="315" src="https://www.youtube.com/embed/', VIEW$YTlink,'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br><a href="https://www.youtube.com/watch?v=', VIEW$YTlink, '" target="_blank">YouTube Link</a> (Some features may appear different)')),
+			title = "YouTube Tutorial Video",
+			easyClose = TRUE,	footer = modalButton("Close")	)	)
+	})
 
 	observeEvent(list(input$dataInput, input$dataSelLOAD, DATA$LOAD), {
 		req(DATA$levs)

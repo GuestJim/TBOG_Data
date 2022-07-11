@@ -22,8 +22,16 @@ ui <- function(request)	{fluidPage(
 			width	=	3
 			),
 		mainPanel(
-			textOutput("timeTotal"),
-			textOutput("timePartsSel"),
+			fluidRow(
+				column(8, verticalLayout(
+					textOutput("timeTotal"),
+					textOutput("timePartsSel"),
+				)	),
+				column(4, verticalLayout(
+					if (is.character(VIEW$YTlink))	actionButton('tutorial', "Show YouTube Tutorial"),
+					if (is.character(VIEW$YTlist))	a("YouTube Playlists", href = VIEW$YTlist, target = "_blank"),
+				)	),
+			),
 			tabsetPanel(
 				tabPanel("Table",
 					# verticalLayout(
