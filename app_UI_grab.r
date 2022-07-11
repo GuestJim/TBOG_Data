@@ -1,20 +1,3 @@
-# downGraphUI	<-	function(id, TYPE = NULL, LABEL)	{
-	# ns	<-	NS(id)
-	
-	# tagList(	fixedRow(
-		# column(3,	downloadButton(outputId	=	paste0('downloadGraph', TYPE),	label	=	LABEL)	),
-		# column(3,	numericInput(inputId	=	"gWIDTH",
-				# label	=	"Download Width (In)",
-				# value	=	16,	width	=	"90%"	)
-			# ),
-		# column(4,	numericInput(inputId	=	"gHEIGH",
-				# label	=	"Download Height (In)",
-				# value	=	9,	width	=	"90%"	)
-			# ),
-		# )
-	# )
-# }
-
 ui <- function(request)	{fluidPage(
 	uiOutput('Title'),
 	sidebarLayout(
@@ -31,10 +14,10 @@ ui <- function(request)	{fluidPage(
 			# bookmarkButton(),
 			checkboxGroupInput(inputId	=	"tabCOLS",	label	=	"Statistics to show:",
 				choices		=	names(stats(Inf)),
-				selected	=	c("Mean", "Median"),	#	the default selected values
+				selected	=	c("Mean", "Median"),
 				),
 			checkboxGroupInput(inputId	=	"tabROWS",	label	=	"Parts to show:",
-				choices		=	NULL,	selected	=	NULL,	#	the default selected values
+				choices		=	NULL,	selected	=	NULL,
 				),
 			width	=	3
 			),
@@ -66,16 +49,11 @@ ui <- function(request)	{fluidPage(
 							),
 						),
 						fixedRow(
-							column(5,
-								selectInput(inputId	=	"plotsSel",
-									label	=	"Specific Part Graph:",	choices	=	NULL
-								),
-							),
-							column(7,
-								tableOutput("statsPART"),
-							),
+							column(5,	selectInput(inputId	=	"plotsSel",
+									label	=	"Specific Part Graph:",	choices	=	NULL	)	),
+							column(7,	tableOutput("statsPART")	),
 						),
-						plotOutput("graphPART",	height	=	480),
+						plotOutput("graphPART",		height	=	480),
 						plotOutput("graphCOURSE",	height	=	480,
 							brush	=	brushOpts(id	=	"COURSEbrush", resetOnNew	=	TRUE, direction	=	"x")),
 						textOutput("brushCOURSEtext"),
