@@ -91,8 +91,9 @@ observeEvent(list(input$dataInput, input$dataSelLOAD),	{
 })
 
 output$downloadGraphPart	=	downloadHandler(
-	filename	=	function()	{paste(DATA$levs[as.numeric(input$plotsSel)], "Hist.png", sep=" - ")},
-	content	=	function(file)	{ggsave(file, plot = GRAPH$PLOTs[[as.numeric(input$plotsSel)]], device = "png", width = input$gWIDTH, height = input$gHEIGH)}
+	filename	=	function()	{paste(DATA$levs[as.numeric(input$plotsSel)], "Hist.png", sep = " - ")},
+	content	=	function(file)	{ggsave(file, plot = GRAPH$PLOTs[[as.numeric(input$plotsSel)]],	device = "png",
+		width = input$partWIDTH,	height = input$partHEIGHT)}
 )
 
 observeEvent(input$tabROWS,	{
@@ -105,6 +106,7 @@ observeEvent(input$tabROWS,	{
 },	priority	=	-1)
 
 output$downloadGraph	=	downloadHandler(
-	filename	=	function()	{paste0(DATA$game, " - Hist.png")},
-	content	=	function(file)	{ggsave(file, plot = GRAPH$FACET, device = "png", width = input$gWIDTH, height = input$gHEIGH)}
+	filename	=	function()	{paste(DATA$game, "Hist.png", sep = " - ")},
+	content	=	function(file)	{ggsave(file, plot = GRAPH$FACET, device = "png",
+		width = input$facetWIDTH,	height = input$facetHEIGHT)}
 )

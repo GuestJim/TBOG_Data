@@ -1,3 +1,20 @@
+# downGraphUI	<-	function(id, TYPE = NULL, LABEL)	{
+	# ns	<-	NS(id)
+	
+	# tagList(	fixedRow(
+		# column(3,	downloadButton(outputId	=	paste0('downloadGraph', TYPE),	label	=	LABEL)	),
+		# column(3,	numericInput(inputId	=	"gWIDTH",
+				# label	=	"Download Width (In)",
+				# value	=	16,	width	=	"90%"	)
+			# ),
+		# column(4,	numericInput(inputId	=	"gHEIGH",
+				# label	=	"Download Height (In)",
+				# value	=	9,	width	=	"90%"	)
+			# ),
+		# )
+	# )
+# }
+
 ui <- function(request)	{fluidPage(
 	uiOutput('Title'),
 	sidebarLayout(
@@ -24,8 +41,6 @@ ui <- function(request)	{fluidPage(
 		mainPanel(
 			fluidRow(
 				column(8, verticalLayout(
-					# textOutput("timeTotal"),
-					# textOutput("timePartsSel"),
 					tableOutput("timeTable"),
 				)	),
 				column(4, verticalLayout(
@@ -35,29 +50,19 @@ ui <- function(request)	{fluidPage(
 			),
 			tabsetPanel(
 				tabPanel("Table",
-					# verticalLayout(
-						downloadButton(outputId	=	"downloadTable",	label	=	"Download Table (CSV)"),
-					# ),
+					downloadButton(outputId	=	"downloadTable",	label	=	"Download Table (CSV)"),
 					tableOutput("summaryTable"),
 				),
 				tabPanel("Single Graph",
 					fixedRow(
-						column(3,
-								downloadButton(outputId	=	"downloadGraphPart",	label	=	"Histogram (PNG)")
-							),
-						column(3,
-							numericInput(inputId	=	"gWIDTH",
+						column(3,	downloadButton(outputId	=	"downloadGraphPart",	label	=	"Histogram (PNG)")	),
+						column(3,	numericInput(inputId	=	"partWIDTH",
 								label	=	"Download Width (In)",
-								value	=	16,
-								width	=	"90%"
-								)
+								value	=	16,	width	=	"90%"	)
 							),
-						column(3,
-							numericInput(inputId	=	"gHEIGH",
+						column(4,	numericInput(inputId	=	"partHEIGHT",
 								label	=	"Download Height (In)",
-								value	=	9,
-								width	=	"90%"
-								)
+								value	=	9,	width	=	"90%"	)
 							),
 						),
 						fixedRow(
@@ -79,22 +84,14 @@ ui <- function(request)	{fluidPage(
 					),
 				tabPanel("Faceted Graph", 
 					fixedRow(
-						column(3,
-							downloadButton(outputId	=	"downloadGraph",	label	=	"Faceted Graph (PNG)")
-						),
-						column(3,
-							numericInput(inputId	=	"gWIDTH",
+						column(3,	downloadButton(outputId	=	"downloadGraph",	label	=	"Faceted Graph (PNG)")	),
+						column(3,	numericInput(inputId	=	"facetWIDTH",
 								label	=	"Download Width (In)",
-								value	=	16,
-								width	=	"90%"
-							)
+								value	=	16,	width	=	"90%"	)
 						),
-						column(3,
-							numericInput(inputId	=	"gHEIGH",
+						column(4,	numericInput(inputId	=	"facetHEIGHT",
 								label	=	"Download Height (In)",
-								value	=	9,
-								width	=	"90%"
-							)
+								value	=	9,	width	=	"90%"	)
 						),
 					),
 					plotOutput("graphFACET", height	=	480),
