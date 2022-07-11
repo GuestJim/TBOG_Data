@@ -22,7 +22,9 @@ VIEW$YTlist	=	"https://www.youtube.com/channel/UCtzfp-ZWZWLhGTjhP5NeYqQ/playlist
 dataLOAD	=	function(name, datapath	=	NULL)	{
 	if (is.null(datapath))	datapath	=	name
 	HRdata	=	read_csv(datapath, guess_max = 10, lazy = TRUE, show_col_types = FALSE)
-	DATA$game	=	unlist(strsplit(HRdata[1, ]$Part, " - "))[1]
+	# DATA$game	=	unlist(strsplit(HRdata[1, ]$Part, " - "))[1]
+	# DATA$game	=	gsub(" - Part [0-9]*", "", HRdata[1, ]$Part)
+	DATA$game	=	gsub("_", ":", gsub(".csv.bz2", "", name))
 
 	HRdata$Part		=	ordered(HRdata$Part, unique(HRdata$Part))
 	DATA$levs		<-	levels(HRdata$Part)

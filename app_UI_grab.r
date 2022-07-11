@@ -24,8 +24,9 @@ ui <- function(request)	{fluidPage(
 		mainPanel(
 			fluidRow(
 				column(8, verticalLayout(
-					textOutput("timeTotal"),
-					textOutput("timePartsSel"),
+					# textOutput("timeTotal"),
+					# textOutput("timePartsSel"),
+					tableOutput("timeTable"),
 				)	),
 				column(4, verticalLayout(
 					if (is.character(VIEW$YTlink))	actionButton('tutorial', "Show YouTube Tutorial"),
