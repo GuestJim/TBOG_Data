@@ -149,11 +149,13 @@ timepad	=	function(timesec) {
 HRtime	=	paste(timepad(as.numeric(HRtime)), collapse = ":")
 
 if (file.exists(paste0(game, ".csv.bz2")))	{
-	HRdataOld	=	read_csv(paste0(game, ".csv.bz2"))
-	if (nrow(HRdata)>nrow(HRdataOld))	write_csv(HRdata, paste0(game, ".csv.bz2"))
+	HRdataALL	=	paste0(game, ".csv.bz2")
+	HRdataOld	=	read_csv(HRdataALL)
+	if (nrow(HRdata) > nrow(HRdataOld))	write_csv(HRdata, HRdataALL)
+	if (file.mtime(CSVs[1]) > file.mtime(HRdataALL))	HRdata	=	rbind(HRdataOld, HRdata)
 	rm(HRdataOld)	#get rid of the data read from existing CSV
 }	else	{	#to check if combined CSV exists and if it is out of date
-	write_csv(HRdata, paste0(game, ".csv.bz2"))
+	write_csv(HRdata, HRdataALL)
 }
 
 HRclean	=	HRdata[HRdata$PULSE != 0, ]
