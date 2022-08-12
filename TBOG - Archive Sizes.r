@@ -6,16 +6,25 @@ if (file.exists(paste0(game, " - Archive Sizes.csv")))	OLD	=	TRUE
 ARC.full	=	list.files(pattern = "*Archive.mkv", recursive = TRUE)
 ARC.final	=	list.files(pattern = "*Archive Final.mkv", recursive = TRUE)
 
-SIZE.full	=	file.size(ARC.full)	;	SIZE.final	=	file.size(ARC.final)
+size.name	=	function(IN, NAME = "Size")	{
+	hold	=	file.info(IN)
+	hold$Name	=	gsub("(.*)/.*", "\\1", rownames(hold))
+	out	<-	hold[, c("Name", "size")]
+	rownames(out)	<-	NULL	;	colnames(out)	<-	c("Part", NAME)
+	return(out)
+}
+#	by using file.info instead of just file.size, I can ensure the sizes are paired with names
 
-if (length(SIZE.final) < length(SIZE.full))	SIZE.final = c(SIZE.final, rep(NA, length(SIZE.full) - length(SIZE.final)))
-#	in case not all of the Archive Final.mkv files are present
-
-SIZES	=	data.frame(Part = gsub("(.*)/.*", "\\1", ARC.full),	Original = SIZE.full,	Final = SIZE.final)
+SIZE.full	=	size.name(ARC.full, "Original")	;	SIZE.final	=	size.name(ARC.final, "Final")
+SIZES	=	merge(SIZE.full, SIZE.final, all = TRUE, by = "Part")
 
 if (OLD)	{
 	SIZES.old	=	read.csv(paste0(game, " - Archive Sizes.csv"))
-	SIZES		=	merge(SIZES.old, SIZES, all = TRUE)
+	SIZES.all	=	merge(SIZES.old, SIZES, all = TRUE, by = "Part", suffixes = c(".Old", ".New"))
+	SIZES.all$Original	<-	ifelse(is.na(SIZES.all$Original.Old),	SIZES.all$Original.New,	SIZES.all$Original.Old)
+	SIZES.all$Final		<-	ifelse(is.na(SIZES.all$Final.Old),		SIZES.all$Final.New,	SIZES.all$Final.Old)
+	#	this is to remove instances when the old or new list of sizes is missing values
+	SIZES	<-	SIZES.all[, c("Part", "Original", "Final")]
 }
 
 write.csv(SIZES, paste0(game, " - Archive Sizes.csv"), row.names = FALSE, quote = FALSE)
