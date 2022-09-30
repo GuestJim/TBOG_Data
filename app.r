@@ -1,6 +1,4 @@
 library(shiny)
-# setwd("C:/Users/Jim/Documents/TBOG_Data")
-# setwd("M:/TBOG/TBOG_Data")
 library(readr)
 library(ggplot2)
 
@@ -18,6 +16,7 @@ VIEW	=	new.env()
 
 VIEW$YTlink	=	"_p9Ifq4ln-c"
 VIEW$YTlist	=	"https://www.youtube.com/channel/UCtzfp-ZWZWLhGTjhP5NeYqQ/playlists"
+VIEW$ABOVE	<-	TRUE
 
 dataLOAD	=	function(name, datapath	=	NULL)	{
 	if (is.null(datapath))	datapath	=	name

@@ -104,3 +104,5 @@ observeEvent(list(input$COURSEbrush),	{	req(DATA$HRclean)
 		coord_cartesian(xlim = brushZOOM$x,	expand = FALSE)
 	})
 })
+
+if	(VIEW$ABOVE)	source("app_above.r", local = TRUE)

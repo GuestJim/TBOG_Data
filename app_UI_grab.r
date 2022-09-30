@@ -58,7 +58,13 @@ ui <- function(request)	{fluidPage(
 							brush	=	brushOpts(id	=	"COURSEbrush", resetOnNew	=	TRUE, direction	=	"x")),
 						strong("Click and Drag to Zoom Below"),
 						plotOutput("brushCOURSEzoom",	height	=	480),
-						tableOutput("brushCOURSEtable"),
+						fluidRow(
+							column(4,	tableOutput("brushCOURSEtable")),
+							if	(VIEW$ABOVE)	tagList(
+								column(2,	numericInput('aboveTHRS',	"Heart Rate Threshold",	value = 100,	min = 0,	max = 150,	step = 1)),
+								column(6,	tableOutput('aboveTABL')),
+								),
+						),
 					),
 				tabPanel("Faceted Graph",
 					fixedRow(
