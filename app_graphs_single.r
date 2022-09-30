@@ -1,0 +1,86 @@
+sumLines	=	function(PART, wid = 1)	{
+	list(
+		# geom_vline(data = DATA$STATS[DATA$STATS$Part == PART, ], aes(xintercept = Mean), size = wid),
+		geom_vline(data = DATA$STATS[DATA$STATS$Part == PART, ], aes(xintercept = Median), size = wid),
+		geom_vline(data = DATA$STATS[DATA$STATS$Part == PART, ], aes(xintercept = Lower), size = wid),
+		geom_vline(data = DATA$STATS[DATA$STATS$Part == PART, ], aes(xintercept = Upper), size = wid)
+	)
+}
+
+
+observeEvent(list(input$dataInput, input$dataSelLOAD, DATA$LOAD),	{
+	req(DATA$HRclean)
+	GRAPH$PLOTs	=	lapply(1:length(DATA$levs), function(PART)	{
+		facetHIST(DATA$HRclean[DATA$HRclean$Part == DATA$levs[PART], ]) +
+		sumLines(DATA$levs[PART]) +
+		ggtitle(prettyNUM(DATA$levs[PART]), subtitle = paste0("Total Time: ", timeSum(DATA$HRtime[PART, ]$Time)))
+	})
+	output$statsPART	=	renderTable({	DATA$STATS[input$plotsSel, filtCOL()]	})
+	output$graphPART	=	renderPlot({	GRAPH$PLOTs[as.numeric(input$plotsSel)]	})
+	#	as.numeric is necessary because the input$plotsSel is not a number
+},	priority	=	-1)
+
+observeEvent(list(input$dataInput, input$dataSelLOAD),	{
+	req(DATA$HRclean)
+	
+	PLOT	<-	reactive(	graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)])	)
+	
+	output$graphCOURSE	=	renderPlot({	PLOT()	})
+	if	(VIEW$ABOVE)	output$aboveCOURSE	=	renderPlot({	PLOT()	})
+})
+
+output$downloadGraphPart	=	downloadHandler(
+	filename	=	function()	{paste(DATA$levs[as.numeric(input$plotsSel)], "Hist.png", sep = " - ")},
+	content	=	function(file)	{ggsave(file, plot = GRAPH$PLOTs[[as.numeric(input$plotsSel)]],	device = "png",
+		width = input$partWIDTH,	height = input$partHEIGHT)}
+)
+
+
+graphCOURSE	=	function(DATA, PART)	{
+	ggplot(DATA[DATA$Part == PART, ], aes(x = get("Time in Video"), y = PULSE, color=PULSE)) +
+	ggtitle(prettyNUM(PART), subtitle = "Heart Rate over Time in Video") +
+	scale_color_gradient("Pulse", low = "#6d59ff", high = "#ab4b41", labels = NULL) + 
+	geom_step() + 
+	scale_x_time(name = "Time in Video", expand = c(0.02, 0)) +
+	scale_y_continuous(name = "Heart Rate (bpm)", expand = c(0.02, 0)) +
+	theme(legend.position = "none", plot.title.position = "plot")
+}
+
+brushTABLE	=	function(IN = DATA$HRclean, PART = DATA$levs[as.numeric(input$plotsSel)], BRUSH = brushZOOM)	{
+	if (is.null(BRUSH$x))	return(NULL)
+	IN$Secs	=	as.numeric(IN$"Time in Video")
+	hold		=	IN[
+		IN$Part == PART			&
+		IN$Secs >= BRUSH$x[1]	&
+		IN$Secs <= BRUSH$x[2]
+		, ]
+	
+	out	=	setNames(rbind(	"Min"	=	hold[which.min(hold$PULSE), c("Time in Video", "PULSE")],
+							"Max"	=	hold[which.max(hold$PULSE), c("Time in Video", "PULSE")]	),
+					c("Time in Video", "Pulse")	)
+	out$"Time in Video"	=	sapply(as.numeric(out$"Time in Video"), timeSum)
+	out	=	as.data.frame(rbind(out,	Mean	=	c("",	round(mean(hold$PULSE),		2)	),
+						Median	=	c("",	round(median(hold$PULSE),	2)	)	))
+	rownames(out)	=	c("Min", "Max", "Mean", "Median")
+	return(out)
+}
+
+brushZOOM	=	reactiveValues(x = c(-Inf, Inf),	y = c(-Inf, Inf))
+observeEvent(list(input$COURSEbrush),	{	req(DATA$HRclean)
+	brush <- input$COURSEbrush
+	if (!is.null(brush)) {
+		brushZOOM$x <- c(brush$xmin, brush$xmax)
+	} else {
+		brushZOOM$x <- NULL
+	}
+		
+	output$brushCOURSEtable	=	renderTable({
+		brushTABLE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)], brushZOOM)
+	},	digits	=	2,	rownames	=	TRUE,	striped	=	TRUE)
+
+	
+	output$brushCOURSEzoom	=	renderPlot({
+		graphCOURSE(DATA$HRclean, DATA$levs[as.numeric(input$plotsSel)]) +
+		coord_cartesian(xlim = brushZOOM$x,	expand = FALSE)
+	})
+})

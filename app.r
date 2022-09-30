@@ -17,6 +17,7 @@ VIEW	=	new.env()
 VIEW$YTlink	=	"_p9Ifq4ln-c"
 VIEW$YTlist	=	"https://www.youtube.com/channel/UCtzfp-ZWZWLhGTjhP5NeYqQ/playlists"
 VIEW$ABOVE	<-	TRUE
+VIEW$UPLOAD	<-	FALSE
 
 dataLOAD	=	function(name, datapath	=	NULL)	{
 	if (is.null(datapath))	datapath	=	name
@@ -33,7 +34,7 @@ dataLOAD	=	function(name, datapath	=	NULL)	{
 
 source("app_functions.r",	local = TRUE)
 
-source("app_UI_grab.r", local	=	TRUE)
+source("app_UI.r", local	=	TRUE)
 
 # Define server logic to summarize and view selected dataset ----
 server <- function(input, output, session) {
