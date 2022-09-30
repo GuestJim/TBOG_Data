@@ -4,20 +4,18 @@ library(ggplot2)
 
 DATA	=	new.env()
 FILES	=	list.files(path = "Data", pattern = "*.csv*")
-DATA$LOAD		=	FALSE	#used for tracking if data has been loaded automatically
 # DATA$Default	=	FILES[which.max(file.mtime(paste0("Data/", FILES)))]
-#	with file.mtime, the modified timestamp is found and which.max will find the newest file in the list. In theory then, just updating the Data folder is enough, even though that's not an option with ShinyApps.io
-#		above not useful on ShinyApps.io because the modified times are when they all were uploaded
-# DATA$Default	=	"Amnesia_ Rebirth.csv.bz2"
+#	this will set the default data to be whatever file is newest
+
 GRAPH	=	new.env()
 #	rather than using super-assignment and pushing variables to Global, I'm putting them into this environment
 #	this keeps DATA within the Shiny environment too, so when Shiny ends, the data is apparently removed, which I'm good with
 VIEW	=	new.env()
 
+VIEW$UPLOAD	<-	FALSE
 VIEW$YTlink	=	"_p9Ifq4ln-c"
 VIEW$YTlist	=	"https://www.youtube.com/channel/UCtzfp-ZWZWLhGTjhP5NeYqQ/playlists"
-VIEW$ABOVE	<-	TRUE
-VIEW$UPLOAD	<-	FALSE
+VIEW$THRESH	<-	TRUE
 
 dataLOAD	=	function(name, datapath	=	NULL)	{
 	if (is.null(datapath))	datapath	=	name
@@ -40,19 +38,16 @@ source("app_UI.r", local	=	TRUE)
 server <- function(input, output, session) {
 	setBookmarkExclude(c("dataSelLOAD", "dataInput", "graphs", "tabCOLS", "tabROWS", "gWIDTH", "gHEIGH", "plotsSel"))
 	output$Title	=	renderUI({	titlePanel("Heart Rate Statistics and Graphs")	})
-	if (exists("FILE", envir	=	DATA))	{
-		dataLOAD(DATA$FILE)
-		DATA$LOAD	=	TRUE
-	}
+	
+	if (exists("FILE", envir	=	DATA))	dataLOAD(DATA$FILE)
+	
 	observeEvent(input$dataInput,	{
 		FILE	=	input$dataInput
 		dataLOAD(FILE$name, FILE$datapath)
-		DATA$LOAD	=	TRUE
 	},	priority	=	10)
 
 	observeEvent(input$dataSelLOAD,	{
 		dataLOAD(input$dataSel, paste0("Data/", input$dataSel))
-		DATA$LOAD	=	TRUE
 	},	priority	=	10)
 
 	observeEvent(input$tutorial,	{
@@ -62,7 +57,7 @@ server <- function(input, output, session) {
 			easyClose = TRUE,	footer = modalButton("Close")	)	)
 	})
 
-	observeEvent(list(input$dataInput, input$dataSelLOAD, DATA$LOAD), {
+	observeEvent(list(input$dataInput, input$dataSelLOAD), {
 		req(DATA$levs)
 
 		output$Title	=	renderUI({	titlePanel(paste0(DATA$game, " - Heart Rate Statistics and Graphs"))	})
@@ -75,6 +70,22 @@ server <- function(input, output, session) {
 		)
 	})
 
+	partSEL		<-	reactive(	as.numeric(input$plotsSel)	)
+	partSELlev	<-	reactive(	DATA$levs[partSEL()])
+	
+	PART	<-	reactive({
+		out	<-	DATA$HRclean[DATA$HRclean$Part == partSELlev(), ]
+		updateNumericInput(inputId = "aboveTHRS",	value = quantile(out$PULSE,	0.75,	names = FALSE,	na.rm = TRUE))
+		out
+	})	%>%	bindCache(input$dataSel, input$plotsSel)	%>%	bindEvent(list(input$dataSelLOAD, input$plotsSel))
+	observe(	test	<<-	PART()	)
+	STATS	<-	reactive({
+		out			=	sepCOL(aggregate(list(Pulse = DATA$HRclean$PULSE), list(Part = DATA$HRclean$Part), stats))
+		out			=	merge(out, DATA$HRtime, by="Part", sort = FALSE)
+		out$Time	=	sapply(as.numeric(out$Time), timeSum)
+		return(out)
+	})	%>%	bindCache(input$dataSel)	%>%	bindEvent(input$dataSelLOAD)
+	
 	source("app_tables.r",	local = TRUE)
 	source("app_graphs.r",	local = TRUE)
 }

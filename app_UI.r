@@ -39,6 +39,7 @@ ui <- function(request)	{fluidPage(
 				tabPanel("Single Part",
 					tabsetPanel(
 						tabPanel("Graph",
+							plotOutput("graphPART",		height	=	480),
 							fixedRow(
 								column(3,	downloadButton(outputId	=	"downloadGraphPart",	label	=	"Histogram (PNG)")	),
 								column(3,	numericInput(inputId	=	"partWIDTH",
@@ -50,11 +51,11 @@ ui <- function(request)	{fluidPage(
 										value	=	9,	width	=	"90%"	)
 									),
 								),
-							plotOutput("graphPART",		height	=	480),
 							plotOutput("graphCOURSE",	height	=	480,
 								brush	=	brushOpts(id	=	"COURSEbrush", resetOnNew	=	TRUE, direction	=	"x")),
 							strong("Click and Drag to Zoom Below"),
 							plotOutput("brushCOURSEzoom",	height	=	480),
+							tableOutput('brushCOURSEtable'),
 							),
 						tabPanel("Threshold",
 							plotOutput("aboveCOURSE",	height	=	480),

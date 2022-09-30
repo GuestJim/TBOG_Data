@@ -1,9 +1,9 @@
 stats	=	function(x)	{c(
-	Mean	=	mean(x),
+	Min		=	min(x),
 	Lower	=	quantile(x, 0.25, names	=	FALSE),
+	Mean	=	mean(x),
 	Median	=	median(x),
 	Upper	=	quantile(x, 0.75, names	=	FALSE),
-	Min		=	min(x),
 	Max		=	max(x)
 	)
 }
@@ -37,3 +37,5 @@ prettyNUM	=	function(IN){
 		collapse = " "
 	)
 }
+
+num2time	<-	function(IN)	format(structure(IN, class = c("POSIXct", "POSIXt"), tzone = "UTC"), "%T")
