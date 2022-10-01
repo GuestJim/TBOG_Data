@@ -73,9 +73,12 @@ ui <- function(request)	{fluidPage(
 								),
 							),
 						type	=	"pills",
-						header	=	fluidRow(
+						header	=	tagList(
+							fluidRow(
 								column(5,	selectInput(inputId = "plotsSel",	label = "Selected Part:",	choices = NULL	)	),
 								column(7,	tableOutput("statsPART")	),
+								),
+							helpText("If graphs are blank after loading data, select a different part and return to force an update"),
 							),
 						),
 					),
