@@ -8,7 +8,7 @@ sumLines	=	function(PART, wid = 1)	{
 }
 
 partHIST	<-	reactive({
-	facetHIST(DATA$HRclean[DATA$HRclean$Part == partSELlev(), ]) +
+	graphHIST(DATA$HRclean[DATA$HRclean$Part == partSELlev(), ]) +
 	sumLines(partSELlev()) +
 	ggtitle(prettyNUM(partSELlev()), subtitle = paste0("Total Time: ", timeSum(DATA$HRtime[partSEL(), ]$Time)))
 })	%>%	bindCache(input$dataSel, input$plotsSel)
@@ -26,7 +26,7 @@ output$downloadGraphPart	=	downloadHandler(
 )
 
 
-partCOURSE	<-	reactive(	graphCOURSE(DATA$HRclean, partSELlev())	)	%>%	bindCache(input$dataSel, input$plotsSel)
+partCOURSE	<-	reactive(	graphCOURSE(PART(), partSELlev())	)	%>%	bindCache(input$dataSel, input$plotsSel)
 	
 output$graphCOURSE	=	renderPlot({	partCOURSE()	})
 if	(VIEW$THRESH)	output$aboveCOURSE	=	renderPlot({	partCOURSE()	})

@@ -1,6 +1,7 @@
 library(shiny)
 library(readr)
 library(ggplot2)
+library(magrittr)
 
 DATA	=	new.env()
 FILES	=	list.files(path = "Data", pattern = "*.csv*")
@@ -71,14 +72,14 @@ server <- function(input, output, session) {
 	})
 
 	partSEL		<-	reactive(	as.numeric(input$plotsSel)	)
-	partSELlev	<-	reactive(	DATA$levs[partSEL()])
+	partSELlev	<-	reactive(	DATA$levs[as.numeric(input$plotsSel)]	)
 	
 	PART	<-	reactive({
 		out	<-	DATA$HRclean[DATA$HRclean$Part == partSELlev(), ]
 		updateNumericInput(inputId = "aboveTHRS",	value = quantile(out$PULSE,	0.75,	names = FALSE,	na.rm = TRUE))
 		out
 	})	%>%	bindCache(input$dataSel, input$plotsSel)	%>%	bindEvent(list(input$dataSelLOAD, input$plotsSel))
-	observe(	test	<<-	PART()	)
+
 	STATS	<-	reactive({
 		out			=	sepCOL(aggregate(list(Pulse = DATA$HRclean$PULSE), list(Part = DATA$HRclean$Part), stats))
 		out			=	merge(out, DATA$HRtime, by="Part", sort = FALSE)

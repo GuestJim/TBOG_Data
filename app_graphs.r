@@ -1,4 +1,4 @@
-facetHIST	=	function(IN = DATA$HRclean)	{
+graphHIST	=	function(IN = DATA$HRclean)	{
 	ggplot(IN, aes(PULSE, fill=after_stat(ncount), group = Part)) +
 	scale_fill_gradient("Count", low = "#6d59ff", high = "#ab4b41", labels = NULL) +
 	stat_bin(binwidth = 1, col = "black") +
