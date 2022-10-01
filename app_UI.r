@@ -47,6 +47,7 @@ ui <- function(request)	{fluidPage(
 				column(4, verticalLayout(
 					if (is.character(VIEW$YTlink))	actionButton('tutorial', "Show YouTube Tutorial"),
 					if (is.character(VIEW$YTlist))	a("YouTube Playlists", href = VIEW$YTlist, target = "_blank"),
+					a("GitHub Repo",	href = "https://github.com/GuestJim/TBOG_Data",	target = "_blank")
 				)	),
 			),
 			tabsetPanel(

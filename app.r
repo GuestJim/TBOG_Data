@@ -14,7 +14,8 @@ GRAPH	=	new.env()
 VIEW	=	new.env()
 
 VIEW$UPLOAD	<-	FALSE
-VIEW$YTlink	=	"_p9Ifq4ln-c"
+# VIEW$YTlink	=	"_p9Ifq4ln-c"	#	old video
+VIEW$YTlink	=	"5MaUXtQh4FU"
 VIEW$YTlist	=	"https://www.youtube.com/channel/UCtzfp-ZWZWLhGTjhP5NeYqQ/playlists"
 VIEW$THRESH	<-	TRUE
 
