@@ -1,3 +1,21 @@
+saveGraphUI	<-	function(name, TYPE)	{
+	ns	<-	NS(name)
+	
+	tagList(
+		fixedRow(
+			column(3,	downloadButton(outputId	=	ns("downloadGRAPH"),	label	=	TYPE)	),
+			column(3,	numericInput(inputId	=	ns("WIDTH"),
+					label	=	"Download Width (In)",
+					value	=	16,	width	=	"90%"	)
+			),
+			column(4,	numericInput(inputId	=	ns("HEIGHT"),
+					label	=	"Download Height (In)",
+					value	=	9,	width	=	"90%"	)
+			)
+		)
+	)
+}
+
 ui <- function(request)	{fluidPage(
 	uiOutput('Title'),
 	sidebarLayout(
@@ -40,17 +58,7 @@ ui <- function(request)	{fluidPage(
 					tabsetPanel(
 						tabPanel("Graph",
 							plotOutput("graphPART",		height	=	480),
-							fixedRow(
-								column(3,	downloadButton(outputId	=	"downloadGraphPart",	label	=	"Histogram (PNG)")	),
-								column(3,	numericInput(inputId	=	"partWIDTH",
-										label	=	"Download Width (In)",
-										value	=	16,	width	=	"90%"	)
-									),
-								column(4,	numericInput(inputId	=	"partHEIGHT",
-										label	=	"Download Height (In)",
-										value	=	9,	width	=	"90%"	)
-									),
-								),
+							saveGraphUI('PART',	"Histogram (PNG)"),
 							plotOutput("graphCOURSE",	height	=	480,
 								brush	=	brushOpts(id	=	"COURSEbrush", resetOnNew	=	TRUE, direction	=	"x")),
 							strong("Click and Drag to Zoom Below"),
@@ -64,8 +72,8 @@ ui <- function(request)	{fluidPage(
 								column(6,	tableOutput('aboveTABL')),
 								),
 							),
-						type = "pills",
-						header = fluidRow(
+						type	=	"pills",
+						header	=	fluidRow(
 								column(5,	selectInput(inputId = "plotsSel",	label = "Selected Part:",	choices = NULL	)	),
 								column(7,	tableOutput("statsPART")	),
 							),
@@ -74,17 +82,7 @@ ui <- function(request)	{fluidPage(
 				tabPanel("Multiple Parts",
 					tabsetPanel(
 						tabPanel("Faceted Graph",
-							fixedRow(
-								column(3,	downloadButton(outputId	=	"downloadGraph",	label	=	"Faceted Graph (PNG)")	),
-								column(3,	numericInput(inputId	=	"facetWIDTH",
-										label	=	"Download Width (In)",
-										value	=	16,	width	=	"90%"	)
-								),
-								column(4,	numericInput(inputId	=	"facetHEIGHT",
-										label	=	"Download Height (In)",
-										value	=	9,	width	=	"90%"	)
-								),
-							),
+							saveGraphUI('FACET',	"Faceted Graph (PNG)"),
 							plotOutput("graphFACET", height	=	480),
 						),
 						id	=	"graphs",

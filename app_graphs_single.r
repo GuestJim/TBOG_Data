@@ -8,32 +8,28 @@ sumLines	=	function(PART, wid = 1)	{
 }
 
 partHIST	<-	reactive({
-	graphHIST(DATA$HRclean[DATA$HRclean$Part == partSELlev(), ]) +
+	graphHIST(PART()) +
 	sumLines(partSELlev()) +
 	ggtitle(prettyNUM(partSELlev()), subtitle = paste0("Total Time: ", timeSum(DATA$HRtime[partSEL(), ]$Time)))
-})	%>%	bindCache(input$dataSel, input$plotsSel)
+})	%>%	bindEvent(list(input$dataSelLOAD, partSELlev()))
 
-output$graphPART	<-	renderCachedPlot({	
-	partHIST()
-},	cacheKeyExpr = {list(input$dataSel, input$plotsSel)}	)
+output$graphPART	<-	renderCachedPlot(	
+	partHIST(),	cacheKeyExpr = list(GAME(), partSELlev())
+)	%>%	bindEvent(list(input$dataSelLOAD, partSELlev()))
+
+observe(	saveGRAPHServer('PART',		partHIST(),		partSELlev())	)	%>%	bindEvent(input$dataSelLOAD, input$plotsSel)
+#	the observe is necessary so that it updates the PLOT and NAME arguments correctly
 
 output$statsPART	=	renderTable({	STATS()[partSEL(), filtCOL()]	})
 
-output$downloadGraphPart	=	downloadHandler(
-	filename	=	function()	{paste(partSELlev(), "Hist.png", sep = " - ")},
-	content	=	function(file)	{ggsave(file, plot = partHIST(),	device = "png",
-		width = input$partWIDTH,	height = input$partHEIGHT)}
-)
 
-
-partCOURSE	<-	reactive(	graphCOURSE(PART(), partSELlev())	)	%>%	bindCache(input$dataSel, input$plotsSel)
+partCOURSE	<-	reactive(	graphCOURSE(PART(), partSELlev())	)	%>%	bindEvent(input$dataSelLOAD, partSELlev())
 	
-output$graphCOURSE	=	renderPlot({	partCOURSE()	})
-if	(VIEW$THRESH)	output$aboveCOURSE	=	renderPlot({	partCOURSE()	})
+					output$graphCOURSE	=	renderCachedPlot(	partCOURSE(),	cacheKeyExpr = list(GAME(), partSELlev())	)
+if	(VIEW$THRESH)	output$aboveCOURSE	=	renderCachedPlot(	partCOURSE(),	cacheKeyExpr = list(GAME(), partSELlev())	)
 
 output$brushCOURSEzoom	=	renderPlot({
-	graphCOURSE(PART(), partSELlev()) +
-	coord_cartesian(xlim = c(input$COURSEbrush$xmin, input$COURSEbrush$xmax),	expand = FALSE)
+	partCOURSE() + coord_cartesian(xlim = c(input$COURSEbrush$xmin, input$COURSEbrush$xmax),	expand = FALSE)
 })
 
 output$brushCOURSEtable	=	renderTable({

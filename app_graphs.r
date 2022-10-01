@@ -17,6 +17,13 @@ graphCOURSE	=	function(IN, PART)	{
 	theme(legend.position = "none", plot.title.position = "plot")
 }
 
+saveGRAPHServer	<-	function(name, PLOT, NAME)	{	moduleServer(name, function(input, output, session)	{
+	output$downloadGRAPH	<-	downloadHandler(
+		filename	<-	function()		{	paste(NAME, "Hist.png", sep = " - ")	},
+		content		<-	function(file)	{	ggsave(file,	plot = PLOT,	device = "png",
+			width = input$WIDTH,	height = input$HEIGHT	)}
+	)
+})}
 
 					source("app_graphs_single.r",	local = TRUE)
 					source("app_graphs_facet.r",	local = TRUE)

@@ -62,34 +62,32 @@ server <- function(input, output, session) {
 		req(DATA$levs)
 
 		output$Title	=	renderUI({	titlePanel(paste0(DATA$game, " - Heart Rate Statistics and Graphs"))	})
-		updateCheckboxGroupInput(inputId	=	"tabROWS",
-			choiceValues	=	DATA$levs,	choiceNames	=	lapply(DATA$levs, prettyNUM),	selected	=	DATA$levs
+		updateCheckboxGroupInput(inputId = "tabROWS",
+			choiceValues = DATA$levs,	choiceNames = lapply(DATA$levs, prettyNUM),	selected = DATA$levs
 		)
 
-		updateSelectInput(inputId	=	"plotsSel",
-			choices	=	setNames(1:length(DATA$levs), sapply(DATA$levs, prettyNUM))	#will assign the second argument to the first as names
-		)
-	})
+		updateSelectInput(inputId = "plotsSel",	choices = setNames(1:length(DATA$levs), sapply(DATA$levs, prettyNUM))	)
+	},	priority = 10)
 
+	GAME		<-	reactive(	DATA$game	)	%>%	bindEvent(input$dataSelLOAD)
 	partSEL		<-	reactive(	as.numeric(input$plotsSel)	)
 	partSELlev	<-	reactive(	DATA$levs[as.numeric(input$plotsSel)]	)
 	
 	PART	<-	reactive({
 		out	<-	DATA$HRclean[DATA$HRclean$Part == partSELlev(), ]
 		updateNumericInput(inputId = "aboveTHRS",	value = quantile(out$PULSE,	0.75,	names = FALSE,	na.rm = TRUE))
-		out
-	})	%>%	bindCache(input$dataSel, input$plotsSel)	%>%	bindEvent(list(input$dataSelLOAD, input$plotsSel))
+		return(out)
+	})	%>%	bindEvent(list(input$dataSelLOAD, input$plotsSel))
 
 	STATS	<-	reactive({
 		out			=	sepCOL(aggregate(list(Pulse = DATA$HRclean$PULSE), list(Part = DATA$HRclean$Part), stats))
 		out			=	merge(out, DATA$HRtime, by="Part", sort = FALSE)
 		out$Time	=	sapply(as.numeric(out$Time), timeSum)
 		return(out)
-	})	%>%	bindCache(input$dataSel)	%>%	bindEvent(input$dataSelLOAD)
+	})	%>%	bindCache(GAME())	%>%	bindEvent(input$dataSelLOAD)
 	
 	source("app_tables.r",	local = TRUE)
 	source("app_graphs.r",	local = TRUE)
 }
 
-# Create Shiny app ----
 shinyApp(ui = ui, server = server, enableBookmarking = "url")

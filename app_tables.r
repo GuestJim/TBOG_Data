@@ -14,7 +14,7 @@ output$timeTable	=	renderTable({
 output$summaryTable	=	renderTable({
 	out	<-	STATS()[filtROW(), filtCOL()]
 	levels(out$Part)	=	sapply(levels(out$Part), prettyNUM)
-	out
+	return(out)
 },	digits = 2, striped = TRUE)
 
 output$downloadTable	=	downloadHandler(
