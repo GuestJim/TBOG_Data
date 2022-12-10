@@ -4,15 +4,13 @@ library(ggplot2)
 # setwd("")
 #	only necessary if running by GUI, so leaving it to be done manually
 
-theme_set(theme_bw(base_size = 16))
-DPI			=	120
-ggdevice	=	"png"
-
-gWIDTH	=	16
-gHEIGH	=	9
+ggdevice	=	"png"	;	theme_set(theme_bw(base_size = 16))
+gWIDTH	=	16	;	gHEIGH	=	9	;	DPI			=	120
 
 simpsplit	=	function(...)	unlist(strsplit(...))
 game	=	rev(simpsplit(getwd(), "/"))[1]
+
+timepad	=	function(timesec) sprintf("%02d", c(timesec %/% 3600, timesec %%3600 %/% 60, round(timesec %% 60))) |> paste(collapse = ":")
 
 prettyNUM	=	function(IN){
 	out	=	simpsplit(IN, " ")
@@ -35,16 +33,6 @@ sepCOL	=	function(aggOUT)	{
 	return(out)
 }
 
-customSave	=	function(name="", plot = last_plot(), fold = "", device=ggdevice, width=gWIDTH, height=gHEIGH, dpi=DPI)	{
-	if (fold != "")	name	=	paste0(fold, "/", name)
-	if	(device	==	"png"	|	device == "both")	{
-		ggsave(filename=paste0(name, ".png"), plot = plot, device="png", width=width, height=height, dpi=dpi)
-	}
-	if	(device	==	"pdf"	|	device == "both")	{
-		ggsave(filename=paste0(name, ".pdf"), plot = plot, device="pdf", width=width, height=height)
-	}
-}
-
 stats	=	function(x)	{c(
 	Mean	=	mean(x),
 	Lower	=	quantile(x, 0.25, names	=	FALSE),
@@ -53,6 +41,31 @@ stats	=	function(x)	{c(
 	Min		=	min(x),
 	Max		=	max(x)
 	)
+}
+
+sumLines	=	function(IN,	wid = 2)list(
+	# geom_vline(data = IN, aes(xintercept = Mean), linewidth = wid),
+	geom_vline(data = IN, aes(xintercept = Median), linewidth = wid),
+	geom_vline(data = IN, aes(xintercept = Lower), linewidth = wid),
+	geom_vline(data = IN, aes(xintercept = Upper), linewidth = wid)
+)
+
+baseHIST	<-	function(IN)	{
+	ggplot(IN, aes(PULSE, fill=after_stat(count))) + 
+	scale_fill_gradient("Count", low = "#6d59ff", high = "#ab4b41") + 
+	stat_bin(binwidth = 1, col = "black") + 
+	scale_y_continuous(name = "Count", expand = c(0.02, 0)) + 
+	theme(legend.position = c(1, 1), legend.justification = c(1, 1))
+}
+
+customSave	=	function(name="", plot = last_plot(), fold = "", device=ggdevice, width=gWIDTH, height=gHEIGH, dpi=DPI)	{
+	if (fold != "")	name	=	paste0(fold, "/", name)
+	if	(device	==	"png"	|	device == "both")	{
+		ggsave(filename=paste0(name, ".png"), plot = plot, device="png", width=width, height=height, dpi=dpi)
+	}
+	if	(device	==	"pdf"	|	device == "both")	{
+		ggsave(filename=paste0(name, ".pdf"), plot = plot, device="pdf", width=width, height=height)
+	}
 }
 
 csvFIND	=	function(DIRECT = getwd(), PAT = "Edited.csv")	{
@@ -66,64 +79,53 @@ csvFIND	=	function(DIRECT = getwd(), PAT = "Edited.csv")	{
 CSVs	=	csvFIND()
 
 HRdata	=	data.frame(matrix(nrow = 0, ncol = 3))
+HRdataALL	=	paste0(game, ".csv.bz2")	;	HRdataOld	<-	NULL
+if (file.exists(HRdataALL))	HRdataOld	=	read_csv(HRdataALL, guess_max = 10, lazy = FALSE, show_col_types = FALSE)
 
-for (IND in 1:length(CSVs))	{
-	PART	=	simpsplit(CSVs[IND], "/")[1]
-	print(PART)
-	CSVtimed	=	paste0(PART, "/", PART, " - Timed.csv")
-	# PARTpret	=	prettyNUM(PART)
+for (IND in csvFIND())	{
+	PART	=	simpsplit(IND, "/")[1]	;	print(PART)
+	CSVtimed	<-	paste0(PART, "/", PART, " - Timed.csv")
+	
+	if (PART %in% unique(HRdataOld$Part))	next
 	
 	if (file.exists(CSVtimed))	{
-		temp		=	read_csv(CSVtimed, guess_max = 10, lazy = FALSE, show_col_types = FALSE)
-		temp$Part	=	PART
-		# temp		=	temp[temp$PULSE != 0, }
-		HRdata		=	rbind(HRdata, temp)
+		hold		<-	read_csv(CSVtimed, guess_max = 10, lazy = FALSE, show_col_types = FALSE)
+		hold$Part	<-	PART
+		# hold		=	hold[hold$PULSE != 0, }
+		HRdata		=	rbind(HRdata, hold)
 		next
 	}
-	temp		=	read_csv(CSVs[IND], guess_max = 10, lazy = FALSE, show_col_types = FALSE)
-	temp$SPO2	=	NULL
-	temp$Part	=	gsub("_", ":", PART)
-	temp$Part	=	gsub("[0]([1-9])", "\\1", PART)
+	hold		=	read_csv(IND, guess_max = 10, lazy = FALSE, show_col_types = FALSE)
+	hold$SPO2	=	NULL
+	hold$Part	<-	gsub("_", ":", PART)	|>	gsub("[0]([1-9])", "\\1", x = _)
 	#	replacing _ with : and removing zero padding
 
 #	CSV with Time in Video
-	times	=	format(seq(ISOdate(1,1,1, 0),	by = "sec",	length.out = nrow(temp)), "%H:%M:%S")
-	temp	=	cbind(times, temp)
-	colnames(temp)[1]	=	"Time in Video"
-	write_csv(temp[, -3], CSVtimed)
+	times	=	format(seq(ISOdate(1,1,1, 0),	by = "sec",	length.out = nrow(hold)), "%H:%M:%S")
+	hold$"Time in Video"	=	times
+	write_csv(hold[, c("Time in Video", "PULSE")], CSVtimed)
 	
-	HRdata		<<-	rbind(HRdata, temp)
-	temp		=	temp[temp$PULSE != 0, ]
+	HRdata		<<-	rbind(HRdata, hold)
+	hold		<-	hold[hold$PULSE != 0, ]
 	
 #	Table
-	tempTABL	=	as.data.frame(table(temp$PULSE))
-	colnames(tempTABL)	=	c("Rate","Count")
-	tempTABL$Rate	=	as.numeric(as.character(tempTABL$Rate))
-	write.table(tempTABL, file=paste0(PART, "/", PART, " Frequency.txt"), sep = ",", row.names = FALSE)
+	holdTABL	=	as.data.frame(table(hold$PULSE))	|>	setNames(c("Rate", "Count"))
+	holdTABL$Rate	=	as.numeric(as.character(holdTABL$Rate))
+	write.table(holdTABL, file=paste0(PART, "/", PART, " Frequency.txt"), sep = ",", row.names = FALSE, quote = FALSE)
 	
 #	Graph
-	temp6570	=	sum(tempTABL[tempTABL$Rate >= 65 & tempTABL$Rate < 70, "Count"])
-	temp6065	=	sum(tempTABL[tempTABL$Rate >= 65 & tempTABL$Rate < 70, "Count"])
+	hold6570	=	sum(holdTABL[holdTABL$Rate >= 65 & holdTABL$Rate < 70, "Count"])
+	hold6065	=	sum(holdTABL[holdTABL$Rate >= 60 & holdTABL$Rate < 65, "Count"])
 	
-	PULSEseq	=	70:max(temp$PULSE, 100)
-	if	(temp6570 > 10)	PULSEseq	=	65:max(temp$PULSE, 100)
-	if	(temp6065 > 10)	PULSEseq	=	60:max(temp$PULSE, 100)
+	PULSEseq	=	70:max(hold$PULSE, 100)
+	if	(hold6570 > 10)	PULSEseq	=	65:max(hold$PULSE, 100)
+	if	(hold6065 > 10)	PULSEseq	=	60:max(hold$PULSE, 100)
 	
-	tempSUM	=	sepCOL(aggregate(temp$PULSE, list(Part = temp$Part), stats))
+	holdSUM	=	sepCOL(aggregate(hold$PULSE, list(Part = hold$Part), stats))
 
-	sumLines	=	function(wid = 2)list(
-		# geom_vline(data = tempSUM, aes(xintercept = Mean), size = wid),
-		geom_vline(data = tempSUM, aes(xintercept = Median), size = wid),
-		geom_vline(data = tempSUM, aes(xintercept = Lower), size = wid),
-		geom_vline(data = tempSUM, aes(xintercept = Upper), size = wid)
-	)
-	
-	graphHIST	=	function()	{
-		ggplot(temp, aes(PULSE, fill=after_stat(count))) + 
-		# ggtitle(PARTpret, subtitle=paste0("Length - ", max(temp[, "Time in Video"]))) + 
-		ggtitle(prettyNUM(PART), subtitle=paste0("Length - ", max(temp[, "Time in Video"]))) + 
-		scale_fill_gradient("Count", low = "#6d59ff", high = "#ab4b41") + 
-		sumLines(2) + 
+	graphHIST	<-	baseHIST(hold) + 
+		ggtitle(prettyNUM(PART), subtitle=paste0("Length - ", hold[nrow(hold), "Time in Video"])) + 
+		sumLines(holdSUM) + 
 		stat_bin(binwidth = 1, col = "black") + 
 		scale_x_continuous(
 			breaks			=	PULSEseq,
@@ -133,56 +135,30 @@ for (IND in 1:length(CSVs))	{
 			expand			=	c(0, 0),
 			sec.axis		=	dup_axis(
 				name	=	NULL,
-				breaks	=	tempSUM[, c("Lower", "Median", "Upper")],
+				breaks	=	holdSUM[, c("Lower", "Median", "Upper")],
 				labels	=	c("25%", "Median", "75%"))
-				) + 
-		scale_y_continuous(name = "Count", expand = c(0.02, 0)) + 
-		theme(legend.position = c(1, 1), legend.justification = c(1, 1))
-	}
-	customSave(name = paste0(PART, " - Hist"), plot = graphHIST(), fold = PART)
+			)
+	customSave(name = paste0(PART, " - Hist"), plot = graphHIST, fold = PART)
 }
+
+if (!is.null(HRdataOld))	{HRdata	<-	rbind(HRdataOld, HRdata)	;	rm(HRdataOld)}
+write_csv(HRdata, HRdataALL)
 
 HRtime	=	sum(aggregate(list(Time = HRdata[, "Time in Video"]), list(Part = HRdata$Part), max)$Time)
-timepad	=	function(timesec) {
-	sprintf("%02d", c(timesec %/% 3600, timesec %%3600 %/% 60, round(timesec %% 60)))
-}
-HRtime	=	paste(timepad(as.numeric(HRtime)), collapse = ":")
+HRtime	=	timepad(as.numeric(HRtime))
 
-if (file.exists(paste0(game, ".csv.bz2")))	{
-	HRdataALL	=	paste0(game, ".csv.bz2")
-	HRdataOld	=	read_csv(HRdataALL)
-	if (nrow(HRdata) > nrow(HRdataOld))	write_csv(HRdata, HRdataALL)
-	if (file.mtime(CSVs[1]) > file.mtime(HRdataALL))	HRdata	=	rbind(HRdataOld, HRdata)
-	rm(HRdataOld)	#get rid of the data read from existing CSV
-}	else	{	#to check if combined CSV exists and if it is out of date
-	write_csv(HRdata, HRdataALL)
-}
-
-HRclean	=	HRdata[HRdata$PULSE != 0, ]
+HRclean		=	HRdata[HRdata$PULSE != 0, ]
 HRsummary	=	sepCOL(aggregate(HRclean$PULSE, list(Part = HRclean$Part), stats))
 
-sumLines	=	function(wid = 2)	{
-	list(
-	# geom_vline(data = HRsummary, aes(xintercept = Mean), size = wid),
-	geom_vline(data = HRsummary, aes(xintercept = Median), size = wid),
-	geom_vline(data = HRsummary, aes(xintercept = Lower), size = wid),
-	geom_vline(data = HRsummary, aes(xintercept = Upper), size = wid)
-	)
-}
-
-facetHIST	=	function()	{
-	ggplot(HRclean, aes(PULSE, fill=after_stat(ncount), group = Part)) + 
+facetHIST	<-	baseHIST(HRclean) %+% aes(fill = after_stat(ncount)) + 
 	ggtitle(game, subtitle = paste0("Total Time: ", HRtime)) + 
-	scale_fill_gradient("Count", low = "#6d59ff", high = "#ab4b41", labels = NULL) + 
-	# sumLines +
+	guides(fill = "none") + 
+	# sumLines(HRsummary) + 
 	stat_bin(binwidth = 1, col = "black") + 
 	scale_x_continuous(name = "Heart Rate (bpm)", minor_breaks = NULL) + 
-	scale_y_continuous(name = "Count", expand = c(0.02, 0)) + 
-	facet_wrap(vars(Part), scales = "free_y", labeller = labeller(Part = function(IN)	gsub(paste0(game, " - "), "", IN))) + 
-	theme(legend.position = "none", plot.title.position = "plot")
-}
+	facet_wrap(vars(Part), scales = "free_y", labeller = labeller(Part = function(IN)	gsub(paste0(game, " - "), "", IN)))
 
-customSave(name = paste0(game, " - Hist"), plot = facetHIST(), width = 16)
+customSave(name = paste0(game, " - Hist"), plot = facetHIST, width = 16)
 
 ##	see about making it so this one Search script will find all of the CSVs and make the separate Timed, Hist, and table outputs for each. It should be doable, and having some check on if Timed.csv exists, to skip making the graph and such when it is already there. This single-script design might be superior to the current multi-script, at least for simplicity. Also will be a fun exercise to get working.
 
