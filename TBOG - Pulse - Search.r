@@ -108,7 +108,7 @@ for (IND in CSVnames)	{
 			limits		=	c(PULSElow - 1, PULSEupp + 1),	expand	=	c(0, 0),
 			sec.axis	=	dup_axis(
 				name	=	NULL,
-				breaks	=	PARTsumm[, c("Lower", "Median", "Upper")],
+				breaks	=	PARTsumm[, c("Lower", "Median", "Upper")] |> as.numeric(),
 				labels	=	LABform)
 			)
 	customSave(name = paste0(IND, " - Hist"), plot = graphHIST, fold = IND)
